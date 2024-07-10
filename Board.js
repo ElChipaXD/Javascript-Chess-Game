@@ -22,7 +22,7 @@ const startBoard = game => {
     const setAllowedSquares = (pieceImg) => {
         clickedPieceName = pieceImg.id;
         const allowedMoves = game.getPieceAllowedMoves(clickedPieceName);
-        console.log(`Allowed moves for ${clickedPieceName}: ${allowedMoves}`);
+        debugLog(`Allowed moves for ${clickedPieceName}: ${allowedMoves}`);
         if (allowedMoves.length > 0) {
             const clickedSquare = pieceImg.parentNode;
             clickedSquare.classList.add('clicked-square');
@@ -30,7 +30,7 @@ const startBoard = game => {
             allowedMoves.forEach(allowedMove => {
                 if (document.contains(document.getElementById(allowedMove))) {
                     document.getElementById(allowedMove).classList.add('allowed');
-                    console.log(`Square ${allowedMove} set as allowed`);
+                    debugLog(`Square ${allowedMove} set as allowed`);
                 }
             });
         } else {
@@ -103,14 +103,14 @@ const startBoard = game => {
     });
 
     game.on('pieceMove', piece => {
-        console.log(`Piece ${piece.name} moved to ${piece.position}`);
+        debugLog(`Piece ${piece.name} moved to ${piece.position}`);
         const square = document.getElementById(piece.position);
         square.append(document.getElementById(piece.name));
         clearSquares();
     });
 
     game.on('turnChange', turn => {
-        console.log(`Turn changed to ${turn}`);
+        debugLog(`Turn changed to ${turn}`);
         turnSign.innerHTML = turn === 'white' ? "White's Turn" : "Black's Turn";
     });
 
@@ -120,7 +120,7 @@ const startBoard = game => {
     });
 
     game.on('kill', piece => {
-        console.log(`Piece ${piece.name} was killed`);
+        debugLog(`Piece ${piece.name} was killed`);
         const pieceImg = document.getElementById(piece.name);
         if (pieceImg) {
             pieceImg.parentNode.removeChild(pieceImg);
@@ -138,7 +138,7 @@ const startBoard = game => {
 
     game.on('enPassant', data => {
         const { piece, opponentPawnPos } = data;
-        console.log(`${piece.name} performed an en passant capture`);
+        debugLog(`${piece.name} performed an en passant capture`);
         const opponentPawn = game.getPieceByPos(opponentPawnPos);
         if (opponentPawn) {
             const opponentPawnImg = document.getElementById(opponentPawn.name);

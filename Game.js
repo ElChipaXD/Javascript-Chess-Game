@@ -198,7 +198,7 @@ class Game {
 					this.kill(opponentPawn);
 					enPassantCapture = true;
 					this.triggerEvent('enPassant', { piece, opponentPawnPos });
-					console.log(`${piece.name} performed an en passant capture on ${opponentPawn.name}`);
+					debugLog(`${piece.name} performed an en passant capture on ${opponentPawn.name}`);
 				}
 			}
 
@@ -223,7 +223,7 @@ class Game {
 			// Actualizar el último movimiento si es un peón
 			if (piece.rank === 'pawn' && Math.abs(position - prevPosition) === 20) {
 				this.lastMove = { piece: piece, from: prevPosition, to: position };
-				console.log(`Last move updated for ${piece.name} from ${prevPosition} to ${position}`);
+				debugLog(`Last move updated for ${piece.name} from ${prevPosition} to ${position}`);
 			} else {
 				this.lastMove = { piece: piece, from: prevPosition, to: position };
 			}
@@ -334,5 +334,13 @@ class Game {
 	checkmate(color) {
 		this.triggerEvent('checkMate', color);
 		this.clearEvents();
+	}
+}
+
+const isDebugMode = false; // Cambia a true para habilitar depuración
+
+function debugLog(message) {
+	if (isDebugMode) {
+		console.log(message);
 	}
 }
