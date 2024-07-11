@@ -215,9 +215,13 @@ class Game {
 					this.castleRook(piece.color + 'Rook1');
 				}
 				piece.changePosition(position, true);
+				piece.ableToCastle = false; // Desactiva el enroque después del movimiento
 				this.triggerEvent('castling', { king: piece, rook: this.getPieceByName(piece.color + 'Rook' + (position - prevPosition === 2 ? 2 : 1)) });
 			} else {
 				piece.changePosition(position);
+				if (piece.hasRank('king')) {
+					piece.ableToCastle = false; // Desactiva el enroque si el rey se mueve o captura
+				}
 			}
 
 			// Actualizar el último movimiento si es un peón
