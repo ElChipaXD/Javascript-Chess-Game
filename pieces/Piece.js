@@ -1,22 +1,19 @@
 class Piece {
-	constructor(position, rank, name) {
-		this.position = position;
+	constructor(x, y, rank, name) {
+		this.x = x;
+		this.y = y;
 		this.rank = rank;
 		this.name = name;
 		this.color = this.name.substring(0, 5);
 	}
 
-
 	hasRank(rank) {
-		return this.rank == rank;
+		return this.rank === rank;
 	}
 
-	changePosition(position) {
-		this.position = parseInt(position);
-	}
-
-	getEnPassantMoves(lastMove) {
-		return [];
+	changePosition(x, y) {
+		this.x = x;
+		this.y = y;
 	}
 
 	getAllowedMoves() {
@@ -24,68 +21,82 @@ class Piece {
 	}
 
 	getMovesTop() {
-		const movesTop = [];
-		for (let move = this.position + 10; move <= 88; move += 10) movesTop.push(move);
-		return movesTop;
+		const moves = [];
+		for (let y = this.y + 1; y < 8; y++) {
+			moves.push({ x: this.x, y });
+		}
+		return moves;
 	}
 
 	getMovesBottom() {
-		const movesBottom = [];
-		for (let move = this.position - 10; move >= 11; move -= 10) movesBottom.push(move);
-		return movesBottom;
+		const moves = [];
+		for (let y = this.y - 1; y >= 0; y--) {
+			moves.push({ x: this.x, y });
+		}
+		return moves;
 	}
 
 	getMovesRight() {
-		const num = this.position + '';
-		const movesRight = [];
-		for (let move = this.position + 1; move <= parseInt(num[0] + '8'); move++) movesRight.push(move);
-		return movesRight;
+		const moves = [];
+		for (let x = this.x + 1; x < 8; x++) {
+			moves.push({ x, y: this.y });
+		}
+		return moves;
 	}
 
 	getMovesLeft() {
-		const num = this.position + '';
-		const movesLeft = [];
-		for (let move = this.position - 1; move >= parseInt(num[0] + '1'); move--) movesLeft.push(move);
-		return movesLeft;
+		const moves = [];
+		for (let x = this.x - 1; x >= 0; x--) {
+			moves.push({ x, y: this.y });
+		}
+		return moves;
 	}
 
 	getMovesTopRight() {
-		const movesTopRight = [];
-		for (let move = this.position + 11; move <= 88; move += 11) {
-			const firstDigit = ('' + move)[1];
-			if (firstDigit > 8 || firstDigit < 1) break;
-			movesTopRight.push(move);
+		const moves = [];
+		let x = this.x + 1;
+		let y = this.y + 1;
+		while (x < 8 && y < 8) {
+			moves.push({ x, y });
+			x++;
+			y++;
 		}
-		return movesTopRight;
+		return moves;
 	}
 
 	getMovesTopLeft() {
-		const movesTopLeft = [];
-		for (let move = this.position + 9; move <= 88; move += 9) {
-			const firstDigit = ('' + move)[1];
-			if (firstDigit > 8 || firstDigit < 1) break;
-			movesTopLeft.push(move);
+		const moves = [];
+		let x = this.x - 1;
+		let y = this.y + 1;
+		while (x >= 0 && y < 8) {
+			moves.push({ x, y });
+			x--;
+			y++;
 		}
-		return movesTopLeft;
+		return moves;
 	}
 
 	getMovesBottomRight() {
-		const movesBottomRight = [];
-		for (let move = this.position - 9; move >= 11; move -= 9) {
-			const firstDigit = ('' + move)[1];
-			if (firstDigit > 8 || firstDigit < 1) break;
-			movesBottomRight.push(move);
+		const moves = [];
+		let x = this.x + 1;
+		let y = this.y - 1;
+		while (x < 8 && y >= 0) {
+			moves.push({ x, y });
+			x++;
+			y--;
 		}
-		return movesBottomRight;
+		return moves;
 	}
 
 	getMovesBottomLeft() {
-		const movesBottomLeft = [];
-		for (let move = this.position - 11; move >= 11; move -= 11) {
-			const firstDigit = ('' + move)[1];
-			if (firstDigit > 8 || firstDigit < 1) break;
-			movesBottomLeft.push(move);
+		const moves = [];
+		let x = this.x - 1;
+		let y = this.y - 1;
+		while (x >= 0 && y >= 0) {
+			moves.push({ x, y });
+			x--;
+			y--;
 		}
-		return movesBottomLeft;
+		return moves;
 	}
 }

@@ -1,28 +1,34 @@
 class King extends Piece {
-	constructor(position, name) {
-		super(position, 'king', name);
+	constructor(x, y, name) {
+		super(x, y, 'king', name);
 		this.ableToCastle = true;
 	}
 
-
 	getAllowedMoves() {
-		const position = this.position;
-		return [
-			[parseInt(position) + 1],
-			[parseInt(position) - 1],
-			[parseInt(position) + 10],
-			[parseInt(position) - 10],
-			[parseInt(position) + 11],
-			[parseInt(position) - 11],
-			[parseInt(position) + 9],
-			[parseInt(position) - 9]
+		const moves = [];
+		const potentialMoves = [
+			{ x: this.x + 1, y: this.y },
+			{ x: this.x - 1, y: this.y },
+			{ x: this.x, y: this.y + 1 },
+			{ x: this.x, y: this.y - 1 },
+			{ x: this.x + 1, y: this.y + 1 },
+			{ x: this.x - 1, y: this.y - 1 },
+			{ x: this.x + 1, y: this.y - 1 },
+			{ x: this.x - 1, y: this.y + 1 }
 		];
+		for (const move of potentialMoves) {
+			if (move.x >= 0 && move.x < 8 && move.y >= 0 && move.y < 8) {
+				moves.push(move);
+			}
+		}
+		return [moves];
 	}
 
-	changePosition(position, castle=false) {
+	changePosition(x, y, castle = false) {
+		this.x = x;
+		this.y = y;
 		if (castle) {
 			this.ableToCastle = false;
 		}
-		this.position = parseInt(position);
 	}
 }

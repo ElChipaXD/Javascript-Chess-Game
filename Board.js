@@ -1,36 +1,41 @@
-const startBoard = game => {
+const startBoard = (game) => {
     const board = document.getElementById('board');
-    const squares = board.querySelectorAll('.square');
-    const whiteSematary = document.getElementById('whiteSematary');
-    const blackSematary = document.getElementById('blackSematary');
-    const turnSign = document.getElementById('turn');
-    let clickedPieceName;
+    board.innerHTML = ''; // Limpiar el contenido existente
 
-    const resetBoard = () => {
-        for (const square of squares) {
-            square.innerHTML = '';
-        }
-
-        for (const piece of game.pieces) {
-            const square = document.getElementById(piece.position);
-            square.innerHTML = `<img class="piece ${piece.rank}" id="${piece.name}" src="img/${piece.color}-${piece.rank}.png">`;
+    // Inicializar el tablero con las piezas
+    for (let y = 7; y >= 0; y--) {
+        for (let x = 0; x < 8; x++) {
+            const square = document.createElement('div');
+            square.className = 'square';
+            square.id = `${x}-${y}`;
+            square.dataset.x = x;
+            square.dataset.y = y;
+            if ((x + y) % 2 === 0) {
+                square.classList.add('even');
+            } else {
+                square.classList.add('odd');
+            }
+            board.appendChild(square);
         }
     }
 
-    resetBoard();
+    // Colocar las piezas en sus posiciones iniciales
+    game.pieces.forEach(piece => {
+        const square = document.getElementById(`${piece.x}-${piece.y}`);
+        square.innerHTML = `<img class="piece ${piece.rank}" id="${piece.name}" src="img/${piece.color}-${piece.rank}.png">`;
+    });
 
     const setAllowedSquares = (pieceImg) => {
-        clickedPieceName = pieceImg.id;
+        const clickedPieceName = pieceImg.id;
         const allowedMoves = game.getPieceAllowedMoves(clickedPieceName);
-        debugLog(`Allowed moves for ${clickedPieceName}: ${allowedMoves}`);
         if (allowedMoves.length > 0) {
             const clickedSquare = pieceImg.parentNode;
             clickedSquare.classList.add('clicked-square');
 
             allowedMoves.forEach(allowedMove => {
-                if (document.contains(document.getElementById(allowedMove))) {
-                    document.getElementById(allowedMove).classList.add('allowed');
-                    debugLog(`Square ${allowedMove} set as allowed`);
+                const square = document.getElementById(`${allowedMove.x}-${allowedMove.y}`);
+                if (square) {
+                    square.classList.add('allowed');
                 }
             });
         } else {
@@ -47,9 +52,11 @@ const startBoard = game => {
         }
     }
 
-    function movePiece(square) {
-        const position = square.getAttribute('id');
-        const existedPiece = game.getPieceByPos(position);
+    const movePiece = (square) => {
+        const x = parseInt(square.dataset.x);
+        const y = parseInt(square.dataset.y);
+        const position = { x, y };
+        const existedPiece = game.getPieceByPos(x, y);
 
         if (existedPiece && existedPiece.color === game.turn) {
             const pieceImg = document.getElementById(existedPiece.name);
@@ -57,9 +64,9 @@ const startBoard = game => {
             return setAllowedSquares(pieceImg);
         }
 
+        const clickedPieceName = document.querySelector('.clicked-square img').id;
         const successfulMove = game.movePiece(clickedPieceName, position);
 
-        // Actualizar la UI solo si el movimiento fue exitoso
         if (successfulMove) {
             const movedPiece = document.getElementById(clickedPieceName);
             if (movedPiece) {
@@ -68,34 +75,27 @@ const startBoard = game => {
         }
     }
 
+    const squares = board.querySelectorAll('.square');
     squares.forEach(square => {
-        square.addEventListener("click", function () {
+        square.addEventListener('click', function () {
             movePiece(this);
         });
-        square.addEventListener("dragover", function (event) {
+        square.addEventListener('dragover', function (event) {
             event.preventDefault();
         });
-        square.addEventListener("drop", function () {
+        square.addEventListener('drop', function () {
             movePiece(this);
-        });
-    });
-
-    pieces.forEach(piece => {
-        const pieceImg = document.getElementById(piece.name);
-        pieceImg.addEventListener("drop", function () {
-            const square = document.getElementById(piece.position);
-            movePiece(square);
         });
     });
 
     document.querySelectorAll('img.piece').forEach(pieceImg => {
-        pieceImg.addEventListener("dragstart", function (event) {
+        pieceImg.addEventListener('dragstart', function (event) {
             event.stopPropagation();
-            event.dataTransfer.setData("text", event.target.id);
+            event.dataTransfer.setData('text', event.target.id);
             clearSquares();
             setAllowedSquares(event.target);
         });
-        pieceImg.addEventListener("drop", function (event) {
+        pieceImg.addEventListener('drop', function (event) {
             event.stopPropagation();
             clearSquares();
             setAllowedSquares(event.target);
@@ -103,31 +103,30 @@ const startBoard = game => {
     });
 
     game.on('pieceMove', piece => {
-        debugLog(`Piece ${piece.name} moved to ${piece.position}`);
-        const square = document.getElementById(piece.position);
+        const square = document.getElementById(`${piece.x}-${piece.y}`);
         square.append(document.getElementById(piece.name));
         clearSquares();
     });
 
     game.on('turnChange', turn => {
-        debugLog(`Turn changed to ${turn}`);
+        const turnSign = document.getElementById('turn');
         turnSign.innerHTML = turn === 'white' ? "White's Turn" : "Black's Turn";
+        console.log(`Turn is now ${turn}`);
     });
 
     game.on('promotion', queen => {
-        const square = document.getElementById(queen.position);
-        square.innerHTML = `<img class="piece queen" id="${queen.name}" src="img/${queen.color}Queen.png">`;
+        const square = document.getElementById(`${queen.x}-${queen.y}`);
+        square.innerHTML = `<img class="piece queen" id="${queen.name}" src="img/${queen.color}-queen.png">`;
     });
 
     game.on('kill', piece => {
-        debugLog(`Piece ${piece.name} was killed`);
         const pieceImg = document.getElementById(piece.name);
         if (pieceImg) {
             pieceImg.parentNode.removeChild(pieceImg);
         }
 
-        const sematary = piece.color === 'white' ? whiteSematary : blackSematary;
-        sematary.querySelector('.' + piece.rank).append(pieceImg);
+        const sematary = piece.color === 'white' ? document.getElementById('whiteSematary') : document.getElementById('blackSematary');
+        sematary.querySelector(`.${piece.rank}`).append(pieceImg);
     });
 
     game.on('checkMate', color => {
@@ -138,8 +137,7 @@ const startBoard = game => {
 
     game.on('enPassant', data => {
         const { piece, opponentPawnPos } = data;
-        debugLog(`${piece.name} performed an en passant capture`);
-        const opponentPawn = game.getPieceByPos(opponentPawnPos);
+        const opponentPawn = game.getPieceByPos(opponentPawnPos.x, opponentPawnPos.y);
         if (opponentPawn) {
             const opponentPawnImg = document.getElementById(opponentPawn.name);
             if (opponentPawnImg) {
@@ -147,8 +145,7 @@ const startBoard = game => {
             }
         }
 
-        // Actualizar la posición de la pieza que realiza la captura al paso
-        const square = document.getElementById(piece.position);
+        const square = document.getElementById(`${piece.x}-${piece.y}`);
         const movedPiece = document.getElementById(piece.name);
         if (movedPiece) {
             square.appendChild(movedPiece);
@@ -157,7 +154,7 @@ const startBoard = game => {
 
     game.on('enPassantCapture', data => {
         const { piece, opponentPawnPos } = data;
-        const opponentPawn = game.getPieceByPos(opponentPawnPos);
+        const opponentPawn = game.getPieceByPos(opponentPawnPos.x, opponentPawnPos.y);
         if (opponentPawn) {
             const opponentPawnImg = document.getElementById(opponentPawn.name);
             if (opponentPawnImg) {
@@ -165,42 +162,42 @@ const startBoard = game => {
             }
         }
     });
-}
+};
 
 const pieces = [
-    new Rook(11, 'whiteRook1'),
-    new Knight(12, 'whiteKnight1'),
-    new Bishop(13, 'whiteBishop1'),
-    new Queen(14, 'whiteQueen'),
-    new King(15, 'whiteKing'),
-    new Bishop(16, 'whiteBishop2'),
-    new Knight(17, 'whiteKnight2'),
-    new Rook(18, 'whiteRook2'),
-    new Pawn(21, 'whitePawn1'),
-    new Pawn(22, 'whitePawn2'),
-    new Pawn(23, 'whitePawn3'),
-    new Pawn(24, 'whitePawn4'),
-    new Pawn(25, 'whitePawn5'),
-    new Pawn(26, 'whitePawn6'),
-    new Pawn(27, 'whitePawn7'),
-    new Pawn(28, 'whitePawn8'),
+    new Rook(0, 0, 'whiteRook1'),
+    new Knight(1, 0, 'whiteKnight1'),
+    new Bishop(2, 0, 'whiteBishop1'),
+    new Queen(3, 0, 'whiteQueen'),
+    new King(4, 0, 'whiteKing'),
+    new Bishop(5, 0, 'whiteBishop2'),
+    new Knight(6, 0, 'whiteKnight2'),
+    new Rook(7, 0, 'whiteRook2'),
+    new Pawn(0, 1, 'whitePawn1'),
+    new Pawn(1, 1, 'whitePawn2'),
+    new Pawn(2, 1, 'whitePawn3'),
+    new Pawn(3, 1, 'whitePawn4'),
+    new Pawn(4, 1, 'whitePawn5'),
+    new Pawn(5, 1, 'whitePawn6'),
+    new Pawn(6, 1, 'whitePawn7'),
+    new Pawn(7, 1, 'whitePawn8'),
 
-    new Pawn(71, 'blackPawn1'),
-    new Pawn(72, 'blackPawn2'),
-    new Pawn(73, 'blackPawn3'),
-    new Pawn(74, 'blackPawn4'),
-    new Pawn(75, 'blackPawn5'),
-    new Pawn(76, 'blackPawn6'),
-    new Pawn(77, 'blackPawn7'),
-    new Pawn(78, 'blackPawn8'),
-    new Rook(81, 'blackRook1'),
-    new Knight(82, 'blackKnight1'),
-    new Bishop(83, 'blackBishop1'),
-    new Queen(84, 'blackQueen'),
-    new King(85, 'blackKing'),
-    new Bishop(86, 'blackBishop2'),
-    new Knight(87, 'blackKnight2'),
-    new Rook(88, 'blackRook2')
+    new Pawn(0, 6, 'blackPawn1'),
+    new Pawn(1, 6, 'blackPawn2'),
+    new Pawn(2, 6, 'blackPawn3'),
+    new Pawn(3, 6, 'blackPawn4'),
+    new Pawn(4, 6, 'blackPawn5'),
+    new Pawn(5, 6, 'blackPawn6'),
+    new Pawn(6, 6, 'blackPawn7'),
+    new Pawn(7, 6, 'blackPawn8'),
+    new Rook(0, 7, 'blackRook1'),
+    new Knight(1, 7, 'blackKnight1'),
+    new Bishop(2, 7, 'blackBishop1'),
+    new Queen(3, 7, 'blackQueen'),
+    new King(4, 7, 'blackKing'),
+    new Bishop(5, 7, 'blackBishop2'),
+    new Knight(6, 7, 'blackKnight2'),
+    new Rook(7, 7, 'blackRook2')
 ];
 
 const game = new Game(pieces);

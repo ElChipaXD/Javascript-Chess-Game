@@ -1,9 +1,14 @@
 class Bishop extends Piece {
-	constructor(position, name) {
-		super(position, 'bishop', name);
+	constructor(x, y, name) {
+		super(x, y, 'bishop', name);
 	}
 
 	getAllowedMoves() {
-		return [ this.getMovesTopRight(), this.getMovesTopLeft(), this.getMovesBottomRight(), this.getMovesBottomLeft() ];
+		return [
+			this.getMovesTopRight(),
+			this.getMovesTopLeft(),
+			this.getMovesBottomRight(),
+			this.getMovesBottomLeft()
+		];
 	}
 }

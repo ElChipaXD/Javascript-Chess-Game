@@ -1,15 +1,21 @@
 class Rook extends Piece {
-	constructor(position, name) {
-		super(position, 'rook', name);
+	constructor(x, y, name) {
+		super(x, y, 'rook', name);
 		this.ableToCastle = true;
 	}
 
-	changePosition(position) {
-		this.position = parseInt(position);
+	changePosition(x, y) {
+		this.x = x;
+		this.y = y;
 		this.ableToCastle = false;
 	}
 
 	getAllowedMoves() {
-		return [ this.getMovesTop(), this.getMovesBottom(), this.getMovesRight(), this.getMovesLeft() ];
+		return [
+			this.getMovesTop(),
+			this.getMovesBottom(),
+			this.getMovesRight(),
+			this.getMovesLeft()
+		];
 	}
 }

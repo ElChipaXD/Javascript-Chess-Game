@@ -1,9 +1,9 @@
 class Queen extends Piece {
-	constructor(position, name) {
-		super(position, 'queen', name);
+	constructor(x, y, name) {
+		super(x, y, 'queen', name);
 	}
 
-	getAllowedMoves(){
+	getAllowedMoves() {
 		return [
 			this.getMovesTop(),
 			this.getMovesTopRight(),

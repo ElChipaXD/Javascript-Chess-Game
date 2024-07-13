@@ -1,19 +1,27 @@
 class Knight extends Piece {
-	constructor(position, name) {
-		super(position, 'knight', name);
+	constructor(x, y, name) {
+		super(x, y, 'knight', name);
 	}
 
 	getAllowedMoves() {
-		const position = this.position;
-		return [
-			[parseInt(position) + 21],
-			[parseInt(position) - 21],
-			[parseInt(position) + 19],
-			[parseInt(position) - 19],
-			[parseInt(position) + 12],
-			[parseInt(position) - 12],
-			[parseInt(position) + 8],
-			[parseInt(position) - 8]
+		const moves = [];
+		const potentialMoves = [
+			{ x: this.x + 2, y: this.y + 1 },
+			{ x: this.x + 2, y: this.y - 1 },
+			{ x: this.x - 2, y: this.y + 1 },
+			{ x: this.x - 2, y: this.y - 1 },
+			{ x: this.x + 1, y: this.y + 2 },
+			{ x: this.x + 1, y: this.y - 2 },
+			{ x: this.x - 1, y: this.y + 2 },
+			{ x: this.x - 1, y: this.y - 2 }
 		];
+
+		for (const move of potentialMoves) {
+			if (move.x >= 0 && move.x < 8 && move.y >= 0 && move.y < 8) {
+				moves.push(move);
+			}
+		}
+
+		return [moves];
 	}
 }

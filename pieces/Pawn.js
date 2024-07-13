@@ -1,23 +1,22 @@
 class Pawn extends Piece {
-	constructor(position, name) {
-		super(position, 'pawn', name);
+	constructor(x, y, name) {
+		super(x, y, 'pawn', name);
 	}
 
 	getAllowedMoves() {
 		let allowedMoves = [[], []]; // [attacking moves, moving moves]
 
-		if (this.color === 'white') {
-			// Movimientos de ataque
-			allowedMoves[0].push(this.position + 9, this.position + 11);
-			// Movimientos normales
-			allowedMoves[1].push(this.position + 10);
-			if (Math.floor(this.position / 10) === 2) allowedMoves[1].push(this.position + 20); // Movimiento doble
-		} else {
-			// Movimientos de ataque
-			allowedMoves[0].push(this.position - 9, this.position - 11);
-			// Movimientos normales
-			allowedMoves[1].push(this.position - 10);
-			if (Math.floor(this.position / 10) === 7) allowedMoves[1].push(this.position - 20); // Movimiento doble
+		const direction = this.color === 'white' ? 1 : -1;
+		const startRow = this.color === 'white' ? 1 : 6;
+
+		// Movimientos de ataque
+		allowedMoves[0].push({ x: this.x + 1, y: this.y + direction });
+		allowedMoves[0].push({ x: this.x - 1, y: this.y + direction });
+
+		// Movimientos normales
+		allowedMoves[1].push({ x: this.x, y: this.y + direction });
+		if (this.y === startRow) {
+			allowedMoves[1].push({ x: this.x, y: this.y + 2 * direction });
 		}
 
 		return allowedMoves;
@@ -28,14 +27,14 @@ class Pawn extends Piece {
 
 		if (!lastMove || lastMove.piece.rank !== 'pawn') return enPassantMoves;
 
-		const direction = this.color === 'white' ? 10 : -10;
-		const startRow = this.color === 'white' ? 5 : 4;
+		const direction = this.color === 'white' ? 1 : -1;
+		const startRow = this.color === 'white' ? 4 : 3;
 		const opponentColor = this.color === 'white' ? 'black' : 'white';
 
-		if (Math.floor(this.position / 10) === startRow && lastMove.piece.color === opponentColor &&
-			Math.abs(lastMove.to - lastMove.from) === 20 &&
-			Math.abs(this.position - lastMove.to) === 1) {
-			enPassantMoves.push(lastMove.to + direction);
+		if (this.y === startRow && lastMove.piece.color === opponentColor &&
+			Math.abs(lastMove.to.y - lastMove.from.y) === 2 &&
+			Math.abs(this.x - lastMove.to.x) === 1) {
+			enPassantMoves.push({ x: lastMove.to.x, y: this.y + direction });
 		}
 
 		return enPassantMoves;

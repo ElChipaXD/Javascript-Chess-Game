@@ -3,7 +3,7 @@ class Game {
 		this.pieces = pieces;
 		this.turn = 'white';
 		this.clickedPiece = null;
-		this.lastMove = null; // Propiedad para rastrear el último movimiento de un peón
+		this.lastMove = null;
 		this._events = {
 			pieceMove: [],
 			kill: [],
@@ -11,8 +11,8 @@ class Game {
 			promotion: [],
 			checkMate: [],
 			turnChange: [],
-			enPassant: [], // Nuevo evento para enPassant
-			castling: []   // Nuevo evento para enroque
+			enPassant: [],
+			castling: []
 		};
 	}
 
@@ -29,24 +29,20 @@ class Game {
 	changeTurn() {
 		this.turn = this.turn === 'white' ? 'black' : 'white';
 		this.triggerEvent('turnChange', this.turn);
+		debugLog(`Turn changed to ${this.turn}`);
 	}
 
 	getPiecesByColor(color) {
-		return this.pieces.filter(obj => {
-			return obj.color === color;
-		});
+		return this.pieces.filter(obj => obj.color === color);
 	}
 
 	getPlayerPositions(color) {
 		const pieces = this.getPiecesByColor(color);
-		return pieces.map(a => parseInt(a.position));
+		return pieces.map(a => ({ x: a.x, y: a.y }));
 	}
 
 	filterPositions(positions) {
-		return positions.filter(pos => {
-			const secondDigit = pos.toString().charAt(1);
-			return pos > 10 && pos < 89 && secondDigit < 9 && secondDigit > 0;
-		});
+		return positions.filter(pos => pos.x >= 0 && pos.x < 8 && pos.y >= 0 && pos.y < 8);
 	}
 
 	unblockedPositions(piece, allowedPositions, checking = true) {
@@ -63,38 +59,39 @@ class Game {
 		}
 
 		if (piece.hasRank('pawn')) {
+			// Movimientos de captura del peón
 			for (const move of allowedPositions[0]) { // attacking moves
 				if (checking && this.myKingChecked(move)) continue;
-				if (otherBlockedPositions.indexOf(move) !== -1 || move === piece.position + (piece.color === 'white' ? 10 : -10)) unblockedPositions.push(move);
+				if (otherBlockedPositions.some(p => p.x === move.x && p.y === move.y)) {
+					unblockedPositions.push(move);
+				}
 			}
+			// Movimientos normales del peón
 			const blockedPositions = [...myBlockedPositions, ...otherBlockedPositions];
 			for (const move of allowedPositions[1]) { // moving moves
-				if (blockedPositions.indexOf(move) !== -1) {
+				if (blockedPositions.some(p => p.x === move.x && p.y === move.y)) {
 					break;
 				} else if (checking && this.myKingChecked(move, false)) continue;
 				unblockedPositions.push(move);
 			}
-
 			// Agregar movimientos de captura al paso
 			const enPassantMoves = piece.getEnPassantMoves(this.lastMove);
 			for (const move of enPassantMoves) {
 				unblockedPositions.push(move);
 			}
-
 		} else {
-			allowedPositions.forEach((allowedPositionsGroup, index) => {
+			allowedPositions.forEach((allowedPositionsGroup) => {
 				for (const move of allowedPositionsGroup) {
-					if (myBlockedPositions.indexOf(move) !== -1) {
+					if (myBlockedPositions.some(p => p.x === move.x && p.y === move.y)) {
 						break;
 					} else if (checking && this.myKingChecked(move)) {
-						if (otherBlockedPositions.indexOf(move) !== -1) {
+						if (otherBlockedPositions.some(p => p.x === move.x && p.y === move.y)) {
 							break;
 						}
 						continue;
 					}
 					unblockedPositions.push(move);
-
-					if (otherBlockedPositions.indexOf(move) !== -1) {
+					if (otherBlockedPositions.some(p => p.x === move.x && p.y === move.y)) {
 						break;
 					}
 				}
@@ -107,7 +104,7 @@ class Game {
 	getPieceAllowedMoves(pieceName) {
 		const piece = this.getPieceByName(pieceName);
 		if (!piece) {
-			console.error(`Piece with name ${pieceName} removed`);
+			console.error(`Piece with name ${pieceName} not found`);
 			return [];
 		}
 		if (this.turn === piece.color) {
@@ -118,13 +115,13 @@ class Game {
 				pieceAllowedMoves = this.getCastlingSquares(piece, pieceAllowedMoves);
 			}
 
-			// Incluir movimientos de captura al paso
 			if (piece.rank === 'pawn') {
 				const enPassantMoves = piece.getEnPassantMoves(this.lastMove);
-				pieceAllowedMoves[1] = pieceAllowedMoves[1].concat(enPassantMoves); // Asegúrate de concatenar en [1] para movimientos de avance
+				pieceAllowedMoves[1] = pieceAllowedMoves[1].concat(enPassantMoves);
 			}
 
 			const unblockedPositions = this.unblockedPositions(piece, pieceAllowedMoves, true);
+			console.log(`Allowed moves for ${piece.name}:`, unblockedPositions);
 			return unblockedPositions;
 		} else {
 			return [];
@@ -136,35 +133,37 @@ class Game {
 		const rook1 = this.getPieceByName(this.turn + 'Rook1');
 		const rook2 = this.getPieceByName(this.turn + 'Rook2');
 		if (rook1 && rook1.ableToCastle) {
-			const castlingPosition = rook1.position + 2;
+			const castlingPosition = { x: rook1.x - 2, y: rook1.y };
 			if (
-				!this.positionHasExistingPiece(castlingPosition - 1) &&
-				!this.positionHasExistingPiece(castlingPosition) && !this.myKingChecked(castlingPosition, true) &&
-				!this.positionHasExistingPiece(castlingPosition + 1) && !this.myKingChecked(castlingPosition + 1, true)
-			)
-				allowedMoves[1].push(castlingPosition);
+				!this.positionHasExistingPiece({ x: castlingPosition.x + 1, y: castlingPosition.y }) &&
+				!this.positionHasExistingPiece({ x: castlingPosition.x, y: castlingPosition.y }) &&
+				!this.myKingChecked({ x: castlingPosition.x, y: castlingPosition.y }) &&
+				!this.positionHasExistingPiece({ x: castlingPosition.x - 1, y: castlingPosition.y }) &&
+				!this.myKingChecked({ x: castlingPosition.x - 1, y: castlingPosition.y })
+			) allowedMoves[1].push(castlingPosition);
 		}
 		if (rook2 && rook2.ableToCastle) {
-			const castlingPosition = rook2.position - 1;
+			const castlingPosition = { x: rook2.x + 1, y: rook2.y };
 			if (
-				!this.positionHasExistingPiece(castlingPosition - 1) && !this.myKingChecked(castlingPosition - 1, true) &&
-				!this.positionHasExistingPiece(castlingPosition) && !this.myKingChecked(castlingPosition, true)
-			)
-				allowedMoves[0].push(castlingPosition);
+				!this.positionHasExistingPiece({ x: castlingPosition.x - 1, y: castlingPosition.y }) &&
+				!this.myKingChecked({ x: castlingPosition.x - 1, y: castlingPosition.y }) &&
+				!this.positionHasExistingPiece({ x: castlingPosition.x, y: castlingPosition.y }) &&
+				!this.myKingChecked({ x: castlingPosition.x, y: castlingPosition.y })
+			) allowedMoves[0].push(castlingPosition);
 		}
 		return allowedMoves;
 	}
 
 	getPieceByName(piecename) {
-		return this.pieces.filter(obj => obj.name === piecename)[0];
+		return this.pieces.find(obj => obj.name === piecename);
 	}
 
-	getPieceByPos(piecePosition) {
-		return this.pieces.filter(obj => obj.position == piecePosition)[0];
+	getPieceByPos(x, y) {
+		return this.pieces.find(obj => obj.x === x && obj.y === y);
 	}
 
 	positionHasExistingPiece(position) {
-		return this.getPieceByPos(position) !== undefined;
+		return this.getPieceByPos(position.x, position.y) !== undefined;
 	}
 
 	setClickedPiece(piece) {
@@ -181,24 +180,22 @@ class Game {
 
 	movePiece(pieceName, position) {
 		const piece = this.getPieceByName(pieceName);
-		const prevPosition = piece.position;
-		position = parseInt(position);
+		const prevPosition = { x: piece.x, y: piece.y };
+		const newPosition = position;
 
-		if (piece && this.getPieceAllowedMoves(piece.name).indexOf(position) !== -1) {
-			const existedPiece = this.getPieceByPos(position);
+		if (piece && this.getPieceAllowedMoves(piece.name).some(pos => pos.x === newPosition.x && pos.y === newPosition.y)) {
+			const existedPiece = this.getPieceByPos(newPosition.x, newPosition.y);
 
-			// Lógica de captura al paso
 			let enPassantCapture = false;
 			let opponentPawnPos = null;
 			if (piece.rank === 'pawn' && !existedPiece) {
 				const enPassantMoves = piece.getEnPassantMoves(this.lastMove);
-				if (enPassantMoves.includes(position)) {
+				if (enPassantMoves.some(pos => pos.x === newPosition.x && pos.y === newPosition.y)) {
 					opponentPawnPos = this.lastMove.to;
-					const opponentPawn = this.getPieceByPos(opponentPawnPos);
+					const opponentPawn = this.getPieceByPos(opponentPawnPos.x, opponentPawnPos.y);
 					this.kill(opponentPawn);
 					enPassantCapture = true;
 					this.triggerEvent('enPassant', { piece, opponentPawnPos });
-					debugLog(`${piece.name} performed an en passant capture on ${opponentPawn.name}`);
 				}
 			}
 
@@ -206,35 +203,30 @@ class Game {
 				this.kill(existedPiece);
 			}
 
-			// Lógica para enroque
 			if (!existedPiece && piece.hasRank('king') && piece.ableToCastle === true) {
-				if (position - prevPosition === 2) {
+				if (newPosition.x - prevPosition.x === 2) {
 					this.castleRook(piece.color + 'Rook2');
-				}
-				else if (position - prevPosition === -2) {
+				} else if (newPosition.x - prevPosition.x === -2) {
 					this.castleRook(piece.color + 'Rook1');
 				}
-				piece.changePosition(position, true);
-				piece.ableToCastle = false; // Desactiva el enroque después del movimiento
-				this.triggerEvent('castling', { king: piece, rook: this.getPieceByName(piece.color + 'Rook' + (position - prevPosition === 2 ? 2 : 1)) });
+				piece.changePosition(newPosition.x, newPosition.y, true);
+				this.triggerEvent('castling', { king: piece, rook: this.getPieceByName(piece.color + 'Rook' + (newPosition.x - prevPosition.x === 2 ? 2 : 1)) });
 			} else {
-				piece.changePosition(position);
+				piece.changePosition(newPosition.x, newPosition.y);
 				if (piece.hasRank('king')) {
-					piece.ableToCastle = false; // Desactiva el enroque si el rey se mueve o captura
+					piece.ableToCastle = false;
 				}
 			}
 
-			// Actualizar el último movimiento si es un peón
-			if (piece.rank === 'pawn' && Math.abs(position - prevPosition) === 20) {
-				this.lastMove = { piece: piece, from: prevPosition, to: position };
-				debugLog(`Last move updated for ${piece.name} from ${prevPosition} to ${position}`);
+			if (piece.rank === 'pawn' && Math.abs(newPosition.y - prevPosition.y) === 2) {
+				this.lastMove = { piece: piece, from: prevPosition, to: newPosition };
 			} else {
-				this.lastMove = { piece: piece, from: prevPosition, to: position };
+				this.lastMove = { piece: piece, from: prevPosition, to: newPosition };
 			}
 
 			this.triggerEvent('pieceMove', piece);
 
-			if (piece.rank === 'pawn' && (position > 80 || position < 20)) {
+			if (piece.rank === 'pawn' && (newPosition.y === 0 || newPosition.y === 7)) {
 				this.promote(piece);
 			}
 
@@ -259,46 +251,46 @@ class Game {
 	}
 
 	kill(piece) {
-		this.pieces.splice(this.pieces.indexOf(piece), 1);
+		this.pieces = this.pieces.filter(p => p !== piece);
 		this.triggerEvent('kill', piece);
 	}
 
 	castleRook(rookName) {
 		const rook = this.getPieceByName(rookName);
-		const newPosition = rookName.indexOf('Rook2') !== -1 ? rook.position - 2 : rook.position + 3;
+		const newPosition = rookName.includes('Rook2') ? { x: rook.x - 2, y: rook.y } : { x: rook.x + 3, y: rook.y };
 
 		this.setClickedPiece(rook);
 
-		rook.changePosition(newPosition);
+		rook.changePosition(newPosition.x, newPosition.y);
 		this.triggerEvent('pieceMove', rook);
 	}
 
 	promote(pawn) {
 		const queenName = pawn.name.replace('Pawn', 'Queen');
-		this.pieces.splice(this.pieces.indexOf(pawn), 1);
-		const queen = new Queen(pawn.position, queenName);
+		this.pieces = this.pieces.filter(p => p !== pawn);
+		const queen = new Queen(pawn.x, pawn.y, queenName);
 		this.pieces.push(queen);
 		this.triggerEvent('promotion', queen);
 
-		const square = document.getElementById(queen.position);
+		const square = document.getElementById(`${queen.x}-${queen.y}`);
 		square.innerHTML = `<img class="piece queen" id="${queen.name}" src="img/${queen.color}-queen.png">`;
 	}
 
 	myKingChecked(pos, kill = true) {
 		const piece = this.clickedPiece;
-		const originalPosition = piece.position;
-		const otherPiece = this.getPieceByPos(pos);
+		const originalPosition = { x: piece.x, y: piece.y };
+		const otherPiece = this.getPieceByPos(pos.x, pos.y);
 		const should_kill_other_piece = kill && otherPiece && otherPiece.rank !== 'king';
-		piece.changePosition(pos);
-		if (should_kill_other_piece) this.pieces.splice(this.pieces.indexOf(otherPiece), 1);
+		piece.changePosition(pos.x, pos.y);
+		if (should_kill_other_piece) this.pieces = this.pieces.filter(p => p !== otherPiece);
 		if (this.king_checked(piece.color)) {
-			piece.changePosition(originalPosition);
+			piece.changePosition(originalPosition.x, originalPosition.y);
 			if (should_kill_other_piece) {
 				this.pieces.push(otherPiece);
 			}
 			return 1;
 		} else {
-			piece.changePosition(originalPosition);
+			piece.changePosition(originalPosition.x, originalPosition.y);
 			if (should_kill_other_piece) this.pieces.push(otherPiece);
 			return 0;
 		}
@@ -321,12 +313,12 @@ class Game {
 	king_checked(color) {
 		const piece = this.clickedPiece;
 		const king = this.getPieceByName(color + 'King');
-		const enemyColor = (color === 'white') ? 'black' : 'white';
+		const enemyColor = color === 'white' ? 'black' : 'white';
 		const enemyPieces = this.getPiecesByColor(enemyColor);
 		for (const enemyPiece of enemyPieces) {
 			this.setClickedPiece(enemyPiece);
 			const allowedMoves = this.unblockedPositions(enemyPiece, enemyPiece.getAllowedMoves(), false);
-			if (allowedMoves.indexOf(king.position) !== -1) {
+			if (allowedMoves.some(pos => pos.x === king.x && pos.y === king.y)) {
 				this.setClickedPiece(piece);
 				return 1;
 			}
@@ -341,7 +333,7 @@ class Game {
 	}
 }
 
-const isDebugMode = false; // Cambia a true para habilitar depuración
+const isDebugMode = true;
 
 function debugLog(message) {
 	if (isDebugMode) {
