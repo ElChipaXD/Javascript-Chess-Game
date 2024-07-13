@@ -22,7 +22,7 @@ class Piece {
 
 	getMovesTop() {
 		const moves = [];
-		for (let y = this.y + 1; y < 8; y++) {
+		for (let y = this.y + 1; y <= 8; y++) {
 			moves.push({ x: this.x, y });
 		}
 		return moves;
@@ -30,7 +30,7 @@ class Piece {
 
 	getMovesBottom() {
 		const moves = [];
-		for (let y = this.y - 1; y >= 0; y--) {
+		for (let y = this.y - 1; y >= 1; y--) {
 			moves.push({ x: this.x, y });
 		}
 		return moves;
@@ -38,7 +38,7 @@ class Piece {
 
 	getMovesRight() {
 		const moves = [];
-		for (let x = this.x + 1; x < 8; x++) {
+		for (let x = this.x + 1; x <= 8; x++) {
 			moves.push({ x, y: this.y });
 		}
 		return moves;
@@ -46,7 +46,7 @@ class Piece {
 
 	getMovesLeft() {
 		const moves = [];
-		for (let x = this.x - 1; x >= 0; x--) {
+		for (let x = this.x - 1; x >= 1; x--) {
 			moves.push({ x, y: this.y });
 		}
 		return moves;
@@ -56,7 +56,7 @@ class Piece {
 		const moves = [];
 		let x = this.x + 1;
 		let y = this.y + 1;
-		while (x < 8 && y < 8) {
+		while (x <= 8 && y <= 8) {
 			moves.push({ x, y });
 			x++;
 			y++;
@@ -68,7 +68,7 @@ class Piece {
 		const moves = [];
 		let x = this.x - 1;
 		let y = this.y + 1;
-		while (x >= 0 && y < 8) {
+		while (x >= 1 && y <= 8) {
 			moves.push({ x, y });
 			x--;
 			y++;
@@ -80,7 +80,7 @@ class Piece {
 		const moves = [];
 		let x = this.x + 1;
 		let y = this.y - 1;
-		while (x < 8 && y >= 0) {
+		while (x <= 8 && y >= 1) {
 			moves.push({ x, y });
 			x++;
 			y--;
@@ -92,7 +92,7 @@ class Piece {
 		const moves = [];
 		let x = this.x - 1;
 		let y = this.y - 1;
-		while (x >= 0 && y >= 0) {
+		while (x >= 1 && y >= 1) {
 			moves.push({ x, y });
 			x--;
 			y--;

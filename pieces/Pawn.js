@@ -7,7 +7,7 @@ class Pawn extends Piece {
 		let allowedMoves = [[], []]; // [attacking moves, moving moves]
 
 		const direction = this.color === 'white' ? 1 : -1;
-		const startRow = this.color === 'white' ? 1 : 6;
+		const startRow = this.color === 'white' ? 2 : 7;
 
 		// Movimientos de ataque
 		allowedMoves[0].push({ x: this.x + 1, y: this.y + direction });
@@ -28,7 +28,7 @@ class Pawn extends Piece {
 		if (!lastMove || lastMove.piece.rank !== 'pawn') return enPassantMoves;
 
 		const direction = this.color === 'white' ? 1 : -1;
-		const startRow = this.color === 'white' ? 4 : 3;
+		const startRow = this.color === 'white' ? 5 : 4;
 		const opponentColor = this.color === 'white' ? 'black' : 'white';
 
 		if (this.y === startRow && lastMove.piece.color === opponentColor &&

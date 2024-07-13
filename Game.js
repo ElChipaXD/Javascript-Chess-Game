@@ -29,6 +29,7 @@ class Game {
 	changeTurn() {
 		this.turn = this.turn === 'white' ? 'black' : 'white';
 		this.triggerEvent('turnChange', this.turn);
+		debugLog(`Turn changed to ${this.turn}`);
 	}
 
 	getPiecesByColor(color) {
@@ -41,7 +42,7 @@ class Game {
 	}
 
 	filterPositions(positions) {
-		return positions.filter(pos => pos.x >= 0 && pos.x < 8 && pos.y >= 0 && pos.y < 8);
+		return positions.filter(pos => pos.x >= 1 && pos.x <= 8 && pos.y >= 1 && pos.y <= 8);
 	}
 
 	unblockedPositions(piece, allowedPositions, checking = true) {
@@ -58,12 +59,14 @@ class Game {
 		}
 
 		if (piece.hasRank('pawn')) {
+			// Movimientos de captura del peón
 			for (const move of allowedPositions[0]) {
 				if (checking && this.myKingChecked(move)) continue;
 				if (otherBlockedPositions.some(p => p.x === move.x && p.y === move.y)) {
 					unblockedPositions.push(move);
 				}
 			}
+			// Movimientos normales del peón
 			const blockedPositions = [...myBlockedPositions, ...otherBlockedPositions];
 			for (const move of allowedPositions[1]) {
 				if (blockedPositions.some(p => p.x === move.x && p.y === move.y)) {
@@ -71,6 +74,7 @@ class Game {
 				} else if (checking && this.myKingChecked(move, false)) continue;
 				unblockedPositions.push(move);
 			}
+			// Agregar movimientos de captura al paso
 			const enPassantMoves = piece.getEnPassantMoves(this.lastMove);
 			for (const move of enPassantMoves) {
 				unblockedPositions.push(move);
@@ -222,7 +226,7 @@ class Game {
 
 			this.triggerEvent('pieceMove', piece);
 
-			if (piece.rank === 'pawn' && (newPosition.y === 0 || newPosition.y === 7)) {
+			if (piece.rank === 'pawn' && (newPosition.y === 1 || newPosition.y === 8)) {
 				this.promote(piece);
 			}
 
@@ -326,5 +330,13 @@ class Game {
 	checkmate(color) {
 		this.triggerEvent('checkMate', color);
 		this.clearEvents();
+	}
+}
+
+const isDebugMode = true;
+
+function debugLog(message) {
+	if (isDebugMode) {
+		console.log(message);
 	}
 }

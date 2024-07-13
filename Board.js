@@ -3,8 +3,8 @@ const startBoard = (game) => {
     board.innerHTML = ''; // Limpiar el contenido existente
 
     // Inicializar el tablero con las piezas
-    for (let y = 7; y >= 0; y--) {
-        for (let x = 0; x < 8; x++) {
+    for (let y = 8; y >= 1; y--) {
+        for (let x = 1; x <= 8; x++) {
             const square = document.createElement('div');
             square.className = 'square';
             square.id = `${x}-${y}`;
@@ -52,26 +52,19 @@ const startBoard = (game) => {
         }
     }
 
-    const handlePieceClick = (pieceImg) => {
-        clearSquares();
-        setAllowedSquares(pieceImg);
-    }
-
-    const movePiece = (square, draggedPieceName = null) => {
+    const movePiece = (square) => {
         const x = parseInt(square.dataset.x);
         const y = parseInt(square.dataset.y);
         const position = { x, y };
         const existedPiece = game.getPieceByPos(x, y);
 
-        const clickedPieceName = draggedPieceName || document.querySelector('.clicked-square img')?.id;
-        if (!clickedPieceName) return;
-
-        if (existedPiece && existedPiece.color === game.turn && !draggedPieceName) {
+        if (existedPiece && existedPiece.color === game.turn) {
             const pieceImg = document.getElementById(existedPiece.name);
-            handlePieceClick(pieceImg);
-            return;
+            clearSquares();
+            return setAllowedSquares(pieceImg);
         }
 
+        const clickedPieceName = document.querySelector('.clicked-square img').id;
         const successfulMove = game.movePiece(clickedPieceName, position);
 
         if (successfulMove) {
@@ -90,16 +83,20 @@ const startBoard = (game) => {
         square.addEventListener('dragover', function (event) {
             event.preventDefault();
         });
-        square.addEventListener('drop', function (event) {
-            event.preventDefault();
-            const draggedPieceName = event.dataTransfer.getData('text');
-            movePiece(this, draggedPieceName);
+        square.addEventListener('drop', function () {
+            movePiece(this);
         });
     });
 
     document.querySelectorAll('img.piece').forEach(pieceImg => {
         pieceImg.addEventListener('dragstart', function (event) {
+            event.stopPropagation();
             event.dataTransfer.setData('text', event.target.id);
+            clearSquares();
+            setAllowedSquares(event.target);
+        });
+        pieceImg.addEventListener('drop', function (event) {
+            event.stopPropagation();
             clearSquares();
             setAllowedSquares(event.target);
         });
@@ -114,6 +111,7 @@ const startBoard = (game) => {
     game.on('turnChange', turn => {
         const turnSign = document.getElementById('turn');
         turnSign.innerHTML = turn === 'white' ? "White's Turn" : "Black's Turn";
+        console.log(`Turn is now ${turn}`);
     });
 
     game.on('promotion', queen => {
@@ -167,39 +165,39 @@ const startBoard = (game) => {
 };
 
 const pieces = [
-    new Rook(0, 0, 'whiteRook1'),
-    new Knight(1, 0, 'whiteKnight1'),
-    new Bishop(2, 0, 'whiteBishop1'),
-    new Queen(3, 0, 'whiteQueen'),
-    new King(4, 0, 'whiteKing'),
-    new Bishop(5, 0, 'whiteBishop2'),
-    new Knight(6, 0, 'whiteKnight2'),
-    new Rook(7, 0, 'whiteRook2'),
-    new Pawn(0, 1, 'whitePawn1'),
-    new Pawn(1, 1, 'whitePawn2'),
-    new Pawn(2, 1, 'whitePawn3'),
-    new Pawn(3, 1, 'whitePawn4'),
-    new Pawn(4, 1, 'whitePawn5'),
-    new Pawn(5, 1, 'whitePawn6'),
-    new Pawn(6, 1, 'whitePawn7'),
-    new Pawn(7, 1, 'whitePawn8'),
+    new Rook(1, 1, 'whiteRook1'),
+    new Knight(2, 1, 'whiteKnight1'),
+    new Bishop(3, 1, 'whiteBishop1'),
+    new Queen(4, 1, 'whiteQueen'),
+    new King(5, 1, 'whiteKing'),
+    new Bishop(6, 1, 'whiteBishop2'),
+    new Knight(7, 1, 'whiteKnight2'),
+    new Rook(8, 1, 'whiteRook2'),
+    new Pawn(1, 2, 'whitePawn1'),
+    new Pawn(2, 2, 'whitePawn2'),
+    new Pawn(3, 2, 'whitePawn3'),
+    new Pawn(4, 2, 'whitePawn4'),
+    new Pawn(5, 2, 'whitePawn5'),
+    new Pawn(6, 2, 'whitePawn6'),
+    new Pawn(7, 2, 'whitePawn7'),
+    new Pawn(8, 2, 'whitePawn8'),
 
-    new Pawn(0, 6, 'blackPawn1'),
-    new Pawn(1, 6, 'blackPawn2'),
-    new Pawn(2, 6, 'blackPawn3'),
-    new Pawn(3, 6, 'blackPawn4'),
-    new Pawn(4, 6, 'blackPawn5'),
-    new Pawn(5, 6, 'blackPawn6'),
-    new Pawn(6, 6, 'blackPawn7'),
-    new Pawn(7, 6, 'blackPawn8'),
-    new Rook(0, 7, 'blackRook1'),
-    new Knight(1, 7, 'blackKnight1'),
-    new Bishop(2, 7, 'blackBishop1'),
-    new Queen(3, 7, 'blackQueen'),
-    new King(4, 7, 'blackKing'),
-    new Bishop(5, 7, 'blackBishop2'),
-    new Knight(6, 7, 'blackKnight2'),
-    new Rook(7, 7, 'blackRook2')
+    new Pawn(1, 7, 'blackPawn1'),
+    new Pawn(2, 7, 'blackPawn2'),
+    new Pawn(3, 7, 'blackPawn3'),
+    new Pawn(4, 7, 'blackPawn4'),
+    new Pawn(5, 7, 'blackPawn5'),
+    new Pawn(6, 7, 'blackPawn6'),
+    new Pawn(7, 7, 'blackPawn7'),
+    new Pawn(8, 7, 'blackPawn8'),
+    new Rook(1, 8, 'blackRook1'),
+    new Knight(2, 8, 'blackKnight1'),
+    new Bishop(3, 8, 'blackBishop1'),
+    new Queen(4, 8, 'blackQueen'),
+    new King(5, 8, 'blackKing'),
+    new Bishop(6, 8, 'blackBishop2'),
+    new Knight(7, 8, 'blackKnight2'),
+    new Rook(8, 8, 'blackRook2')
 ];
 
 const game = new Game(pieces);

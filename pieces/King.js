@@ -17,7 +17,7 @@ class King extends Piece {
 			{ x: this.x - 1, y: this.y + 1 }
 		];
 		for (const move of potentialMoves) {
-			if (move.x >= 0 && move.x < 8 && move.y >= 0 && move.y < 8) {
+			if (move.x >= 1 && move.x <= 8 && move.y >= 1 && move.y <= 8) {
 				moves.push(move);
 			}
 		}
