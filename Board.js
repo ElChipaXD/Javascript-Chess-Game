@@ -22,7 +22,7 @@ const startBoard = (game) => {
     // Colocar las piezas en sus posiciones iniciales
     game.pieces.forEach(piece => {
         const square = document.getElementById(`${piece.x}-${piece.y}`);
-        square.innerHTML = `<img class="piece ${piece.rank}" id="${piece.name}" src="img/${piece.color}-${piece.rank}.png">`;
+        square.innerHTML = `<img class="piece ${piece.rank}" id="${piece.name}" src="img/${piece.color}-${piece.rank}.png" draggable="true">`;
     });
 
     const setAllowedSquares = (pieceImg) => {
@@ -52,19 +52,20 @@ const startBoard = (game) => {
         }
     }
 
-    const movePiece = (square) => {
+    const movePiece = (square, draggedPieceName = null) => {
         const x = parseInt(square.dataset.x);
         const y = parseInt(square.dataset.y);
         const position = { x, y };
         const existedPiece = game.getPieceByPos(x, y);
 
-        if (existedPiece && existedPiece.color === game.turn) {
+        const clickedPieceName = draggedPieceName || document.querySelector('.clicked-square img').id;
+
+        if (existedPiece && existedPiece.color === game.turn && !draggedPieceName) {
             const pieceImg = document.getElementById(existedPiece.name);
             clearSquares();
             return setAllowedSquares(pieceImg);
         }
 
-        const clickedPieceName = document.querySelector('.clicked-square img').id;
         const successfulMove = game.movePiece(clickedPieceName, position);
 
         if (successfulMove) {
@@ -83,8 +84,10 @@ const startBoard = (game) => {
         square.addEventListener('dragover', function (event) {
             event.preventDefault();
         });
-        square.addEventListener('drop', function () {
-            movePiece(this);
+        square.addEventListener('drop', function (event) {
+            event.preventDefault();
+            const draggedPieceName = event.dataTransfer.getData('text');
+            movePiece(this, draggedPieceName);
         });
     });
 
@@ -92,11 +95,6 @@ const startBoard = (game) => {
         pieceImg.addEventListener('dragstart', function (event) {
             event.stopPropagation();
             event.dataTransfer.setData('text', event.target.id);
-            clearSquares();
-            setAllowedSquares(event.target);
-        });
-        pieceImg.addEventListener('drop', function (event) {
-            event.stopPropagation();
             clearSquares();
             setAllowedSquares(event.target);
         });
