@@ -22,7 +22,7 @@ const startBoard = (game) => {
     // Colocar las piezas en sus posiciones iniciales
     game.pieces.forEach(piece => {
         const square = document.getElementById(`${piece.x}-${piece.y}`);
-        square.innerHTML = `<img class="piece ${piece.rank}" id="${piece.name}" src="img/${piece.color}-${piece.rank}.png" draggable="true">`;
+        square.innerHTML = `<img class="piece ${piece.rank}" id="${piece.name}" src="img/${piece.color}-${piece.rank}.png">`;
     });
 
     const setAllowedSquares = (pieceImg) => {
@@ -52,18 +52,24 @@ const startBoard = (game) => {
         }
     }
 
+    const handlePieceClick = (pieceImg) => {
+        clearSquares();
+        setAllowedSquares(pieceImg);
+    }
+
     const movePiece = (square, draggedPieceName = null) => {
         const x = parseInt(square.dataset.x);
         const y = parseInt(square.dataset.y);
         const position = { x, y };
         const existedPiece = game.getPieceByPos(x, y);
 
-        const clickedPieceName = draggedPieceName || document.querySelector('.clicked-square img').id;
+        const clickedPieceName = draggedPieceName || document.querySelector('.clicked-square img')?.id;
+        if (!clickedPieceName) return;
 
         if (existedPiece && existedPiece.color === game.turn && !draggedPieceName) {
             const pieceImg = document.getElementById(existedPiece.name);
-            clearSquares();
-            return setAllowedSquares(pieceImg);
+            handlePieceClick(pieceImg);
+            return;
         }
 
         const successfulMove = game.movePiece(clickedPieceName, position);
@@ -93,7 +99,6 @@ const startBoard = (game) => {
 
     document.querySelectorAll('img.piece').forEach(pieceImg => {
         pieceImg.addEventListener('dragstart', function (event) {
-            event.stopPropagation();
             event.dataTransfer.setData('text', event.target.id);
             clearSquares();
             setAllowedSquares(event.target);
@@ -109,7 +114,6 @@ const startBoard = (game) => {
     game.on('turnChange', turn => {
         const turnSign = document.getElementById('turn');
         turnSign.innerHTML = turn === 'white' ? "White's Turn" : "Black's Turn";
-        console.log(`Turn is now ${turn}`);
     });
 
     game.on('promotion', queen => {
