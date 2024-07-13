@@ -60,7 +60,7 @@ class Game {
 
 		if (piece.hasRank('pawn')) {
 			// Movimientos de captura del peón
-			for (const move of allowedPositions[0]) { // attacking moves
+			for (const move of allowedPositions[0]) {
 				if (checking && this.myKingChecked(move)) continue;
 				if (otherBlockedPositions.some(p => p.x === move.x && p.y === move.y)) {
 					unblockedPositions.push(move);
@@ -68,7 +68,7 @@ class Game {
 			}
 			// Movimientos normales del peón
 			const blockedPositions = [...myBlockedPositions, ...otherBlockedPositions];
-			for (const move of allowedPositions[1]) { // moving moves
+			for (const move of allowedPositions[1]) {
 				if (blockedPositions.some(p => p.x === move.x && p.y === move.y)) {
 					break;
 				} else if (checking && this.myKingChecked(move, false)) continue;
