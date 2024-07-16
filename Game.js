@@ -196,7 +196,7 @@ class Game {
 				!this.myKingChecked(between3, false)
 			) {
 				allowedMoves[1].push(castlingPosition);
-				debugLog(`Long castling is allowed`);
+				debugLog(`Long castling is allowed: added ${JSON.stringify(castlingPosition)}`);
 			} else {
 				debugLog(`Cannot castle long: positionHasExistingPiece between1=${this.positionHasExistingPiece(between1)}, between2=${this.positionHasExistingPiece(between2)}, between3=${this.positionHasExistingPiece(between3)}, myKingChecked between1=${this.myKingChecked(between1, false)}, between2=${this.myKingChecked(between2, false)}, between3=${this.myKingChecked(between3, false)}`);
 			}
@@ -216,7 +216,9 @@ class Game {
 	}
 
 	positionHasExistingPiece(position) {
-		return this.getPieceByPos(position.x, position.y) !== undefined;
+		const exists = this.getPieceByPos(position.x, position.y) !== undefined;
+		debugLog(`Checking positionHasExistingPiece for position: ${JSON.stringify(position)}, exists: ${exists}`);
+		return exists;
 	}
 
 	setClickedPiece(piece) {
@@ -334,11 +336,13 @@ class Game {
 		const originalPosition = { x: piece.x, y: piece.y };
 		const otherPiece = this.getPieceByPos(pos.x, pos.y);
 		const should_kill_other_piece = kill && otherPiece && otherPiece.rank !== 'king';
+		debugLog(`Checking myKingChecked for pos: ${JSON.stringify(pos)}, originalPosition: ${JSON.stringify(originalPosition)}, should_kill_other_piece: ${should_kill_other_piece}`);
 		piece.changePosition(pos.x, pos.y);
 		if (should_kill_other_piece) this.pieces = this.pieces.filter(p => p !== otherPiece);
 		const kingChecked = this.king_checked(piece.color);
 		piece.changePosition(originalPosition.x, originalPosition.y);
 		if (should_kill_other_piece) this.pieces.push(otherPiece);
+		debugLog(`myKingChecked result: ${kingChecked}`);
 		return kingChecked;
 	}
 
