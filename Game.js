@@ -150,25 +150,38 @@ class Game {
 		const rook2 = this.getPieceByName(this.turn + 'Rook2');
 		if (!allowedMoves[0]) allowedMoves[0] = [];
 		if (!allowedMoves[1]) allowedMoves[1] = [];
-		if (rook1 && rook1.ableToCastle) {
-			const castlingPosition = { x: rook1.x - 2, y: rook1.y };
-			if (
-				!this.positionHasExistingPiece({ x: castlingPosition.x + 1, y: castlingPosition.y }) &&
-				!this.positionHasExistingPiece({ x: castlingPosition.x, y: castlingPosition.y }) &&
-				!this.myKingChecked({ x: castlingPosition.x, y: castlingPosition.y }) &&
-				!this.positionHasExistingPiece({ x: castlingPosition.x - 1, y: castlingPosition.y }) &&
-				!this.myKingChecked({ x: castlingPosition.x - 1, y: castlingPosition.y })
-			) allowedMoves[1].push(castlingPosition);
-		}
+
+		// Enroque corto (rey lado rey)
 		if (rook2 && rook2.ableToCastle) {
-			const castlingPosition = { x: rook2.x + 1, y: rook2.y };
+			const castlingPosition = { x: king.x + 2, y: king.y };
+			const between1 = { x: king.x + 1, y: king.y };
+			const between2 = { x: king.x + 2, y: king.y };
+
 			if (
-				!this.positionHasExistingPiece({ x: castlingPosition.x - 1, y: castlingPosition.y }) &&
-				!this.myKingChecked({ x: castlingPosition.x - 1, y: castlingPosition.y }) &&
-				!this.positionHasExistingPiece({ x: castlingPosition.x, y: castlingPosition.y }) &&
-				!this.myKingChecked({ x: castlingPosition.x, y: castlingPosition.y })
+				!this.positionHasExistingPiece(between1) &&
+				!this.positionHasExistingPiece(between2) &&
+				!this.myKingChecked(between1, false) &&
+				!this.myKingChecked(between2, false)
 			) allowedMoves[0].push(castlingPosition);
 		}
+
+		// Enroque largo (rey lado dama)
+		if (rook1 && rook1.ableToCastle) {
+			const castlingPosition = { x: king.x - 2, y: king.y };
+			const between1 = { x: king.x - 1, y: king.y };
+			const between2 = { x: king.x - 2, y: king.y };
+			const between3 = { x: king.x - 3, y: king.y };
+
+			if (
+				!this.positionHasExistingPiece(between1) &&
+				!this.positionHasExistingPiece(between2) &&
+				!this.positionHasExistingPiece(between3) &&
+				!this.myKingChecked(between1, false) &&
+				!this.myKingChecked(between2, false) &&
+				!this.myKingChecked(between3, false)
+			) allowedMoves[1].push(castlingPosition);
+		}
+
 		return allowedMoves;
 	}
 
