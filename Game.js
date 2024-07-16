@@ -145,7 +145,11 @@ class Game {
 	}
 
 	getCastlingSquares(king, allowedMoves) {
-		if (!king.ableToCastle || this.king_checked(this.turn)) return allowedMoves;
+		if (!king.ableToCastle || this.king_checked(this.turn)) {
+			debugLog(`King cannot castle: ableToCastle=${king.ableToCastle}, king_checked=${this.king_checked(this.turn)}`);
+			return allowedMoves;
+		}
+
 		const rook1 = this.getPieceByName(this.turn + 'Rook1'); // Enroque largo
 		const rook2 = this.getPieceByName(this.turn + 'Rook2'); // Enroque corto
 		if (!allowedMoves[0]) allowedMoves[0] = [];
@@ -157,12 +161,21 @@ class Game {
 			const between1 = { x: king.x + 1, y: king.y };
 			const between2 = { x: king.x + 2, y: king.y };
 
+			debugLog(`Checking short castling conditions: positionHasExistingPiece between1=${this.positionHasExistingPiece(between1)}, between2=${this.positionHasExistingPiece(between2)}, myKingChecked between1=${this.myKingChecked(between1, false)}, between2=${this.myKingChecked(between2, false)}`);
+
 			if (
 				!this.positionHasExistingPiece(between1) &&
 				!this.positionHasExistingPiece(between2) &&
 				!this.myKingChecked(between1, false) &&
 				!this.myKingChecked(between2, false)
-			) allowedMoves[0].push(castlingPosition);
+			) {
+				allowedMoves[0].push(castlingPosition);
+				debugLog(`Short castling is allowed`);
+			} else {
+				debugLog(`Cannot castle short: positionHasExistingPiece between1=${this.positionHasExistingPiece(between1)}, between2=${this.positionHasExistingPiece(between2)}, myKingChecked between1=${this.myKingChecked(between1, false)}, between2=${this.myKingChecked(between2, false)}`);
+			}
+		} else {
+			debugLog(`Rook2 cannot castle: rook2=${rook2}, ableToCastle=${rook2?.ableToCastle}`);
 		}
 
 		// Enroque largo (rey lado dama)
@@ -172,6 +185,8 @@ class Game {
 			const between2 = { x: king.x - 2, y: king.y };
 			const between3 = { x: king.x - 3, y: king.y };
 
+			debugLog(`Checking long castling conditions: positionHasExistingPiece between1=${this.positionHasExistingPiece(between1)}, between2=${this.positionHasExistingPiece(between2)}, between3=${this.positionHasExistingPiece(between3)}, myKingChecked between1=${this.myKingChecked(between1, false)}, between2=${this.myKingChecked(between2, false)}, between3=${this.myKingChecked(between3, false)}`);
+
 			if (
 				!this.positionHasExistingPiece(between1) &&
 				!this.positionHasExistingPiece(between2) &&
@@ -179,7 +194,14 @@ class Game {
 				!this.myKingChecked(between1, false) &&
 				!this.myKingChecked(between2, false) &&
 				!this.myKingChecked(between3, false)
-			) allowedMoves[1].push(castlingPosition);
+			) {
+				allowedMoves[1].push(castlingPosition);
+				debugLog(`Long castling is allowed`);
+			} else {
+				debugLog(`Cannot castle long: positionHasExistingPiece between1=${this.positionHasExistingPiece(between1)}, between2=${this.positionHasExistingPiece(between2)}, between3=${this.positionHasExistingPiece(between3)}, myKingChecked between1=${this.myKingChecked(between1, false)}, between2=${this.myKingChecked(between2, false)}, between3=${this.myKingChecked(between3, false)}`);
+			}
+		} else {
+			debugLog(`Rook1 cannot castle: rook1=${rook1}, ableToCastle=${rook1?.ableToCastle}`);
 		}
 
 		return allowedMoves;
