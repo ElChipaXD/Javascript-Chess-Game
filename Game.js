@@ -58,7 +58,20 @@ class Game {
 			otherBlockedPositions = this.getPlayerPositions('white');
 		}
 
-		if (piece.hasRank('pawn')) {
+		if (piece.hasRank('knight')) {
+			// El caballo no es bloqueado por otras piezas
+			for (const move of allowedPositions[0]) {
+				if (checking && this.myKingChecked(move)) continue;
+				unblockedPositions.push(move);
+			}
+		} else if (piece.hasRank('king')) {
+			// El rey no puede moverse a una casilla atacada por una pieza enemiga
+			for (const move of allowedPositions[0]) {
+				if (checking && this.myKingChecked(move)) continue;
+				if (otherBlockedPositions.some(p => p.x === move.x && p.y === move.y)) continue;
+				unblockedPositions.push(move);
+			}
+		} else if (piece.hasRank('pawn')) {
 			// Movimientos de captura del peón
 			for (const move of allowedPositions[0]) {
 				if (checking && this.myKingChecked(move)) continue;
