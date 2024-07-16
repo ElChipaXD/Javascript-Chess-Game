@@ -391,7 +391,7 @@ class Game {
 	}
 }
 
-const isDebugMode = true;
+const isDebugMode = false;
 
 function debugLog(message) {
 	if (isDebugMode) {
