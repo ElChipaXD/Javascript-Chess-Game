@@ -148,7 +148,7 @@ class Game {
 			}
 
 			const unblockedPositions = this.unblockedPositions(piece, pieceAllowedMoves, true);
-			console.log(`Allowed moves for ${piece.name}:`, unblockedPositions);
+			debugLog(`Allowed moves for ${piece.name}:`, unblockedPositions);
 			return unblockedPositions;
 		} else {
 			return [];
