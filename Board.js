@@ -83,8 +83,18 @@ const startBoard = (game) => {
         square.addEventListener('dragover', function (event) {
             event.preventDefault();
         });
-        square.addEventListener('drop', function () {
-            movePiece(this);
+        square.addEventListener('drop', function (event) {
+            event.preventDefault();
+            const pieceId = event.dataTransfer.getData('text');
+            const pieceImg = document.getElementById(pieceId);
+            const parentSquare = pieceImg.parentNode;
+            const targetSquare = this;
+
+            if (parentSquare !== targetSquare) {
+                clearSquares();
+                setAllowedSquares(pieceImg);
+                movePiece(targetSquare);
+            }
         });
     });
 
@@ -95,10 +105,12 @@ const startBoard = (game) => {
             clearSquares();
             setAllowedSquares(event.target);
         });
-        pieceImg.addEventListener('drop', function (event) {
-            event.stopPropagation();
-            clearSquares();
-            setAllowedSquares(event.target);
+
+        pieceImg.addEventListener('dragend', function (event) {
+            const targetSquare = document.elementFromPoint(event.clientX, event.clientY);
+            if (targetSquare && targetSquare.classList.contains('square')) {
+                movePiece(targetSquare);
+            }
         });
     });
 
