@@ -146,8 +146,8 @@ class Game {
 
 	getCastlingSquares(king, allowedMoves) {
 		if (!king.ableToCastle || this.king_checked(this.turn)) return allowedMoves;
-		const rook1 = this.getPieceByName(this.turn + 'Rook1');
-		const rook2 = this.getPieceByName(this.turn + 'Rook2');
+		const rook1 = this.getPieceByName(this.turn + 'Rook1'); // Enroque largo
+		const rook2 = this.getPieceByName(this.turn + 'Rook2'); // Enroque corto
 		if (!allowedMoves[0]) allowedMoves[0] = [];
 		if (!allowedMoves[1]) allowedMoves[1] = [];
 
