@@ -72,21 +72,32 @@ class Game {
 				if (myBlockedPositions.some(p => p.x === move.x && p.y === move.y)) continue;
 				unblockedPositions.push(move);
 			}
+			// Verificamos que las posiciones de enroque no se eliminen
+			if (allowedPositions[1]) {
+				for (const move of allowedPositions[1]) {
+					debugLog(`Checking castling move for king: ${JSON.stringify(move)}`);
+					unblockedPositions.push(move);
+				}
+			}
 		} else if (piece.hasRank('pawn')) {
 			// Movimientos de captura del peón
-			for (const move of allowedPositions[0]) {
-				if (checking && this.myKingChecked(move)) continue;
-				if (otherBlockedPositions.some(p => p.x === move.x && p.y === move.y)) {
-					unblockedPositions.push(move);
+			if (allowedPositions[0]) {
+				for (const move of allowedPositions[0]) {
+					if (checking && this.myKingChecked(move)) continue;
+					if (otherBlockedPositions.some(p => p.x === move.x && p.y === move.y)) {
+						unblockedPositions.push(move);
+					}
 				}
 			}
 			// Movimientos normales del peón
 			const blockedPositions = [...myBlockedPositions, ...otherBlockedPositions];
-			for (const move of allowedPositions[1]) {
-				if (blockedPositions.some(p => p.x === move.x && p.y === move.y)) {
-					break;
-				} else if (checking && this.myKingChecked(move, false)) continue;
-				unblockedPositions.push(move);
+			if (allowedPositions[1]) {
+				for (const move of allowedPositions[1]) {
+					if (blockedPositions.some(p => p.x === move.x && p.y === move.y)) {
+						break;
+					} else if (checking && this.myKingChecked(move, false)) continue;
+					unblockedPositions.push(move);
+				}
 			}
 			// Agregar movimientos de captura al paso
 			const enPassantMoves = piece.getEnPassantMoves(this.lastMove);
