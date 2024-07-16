@@ -131,7 +131,9 @@ class Game {
 
 			if (piece.rank === 'pawn') {
 				const enPassantMoves = piece.getEnPassantMoves(this.lastMove);
-				pieceAllowedMoves[1] = pieceAllowedMoves[1].concat(enPassantMoves);
+				if (pieceAllowedMoves[1]) {
+					pieceAllowedMoves[1] = pieceAllowedMoves[1].concat(enPassantMoves);
+				}
 			}
 
 			const unblockedPositions = this.unblockedPositions(piece, pieceAllowedMoves, true);
@@ -146,6 +148,8 @@ class Game {
 		if (!king.ableToCastle || this.king_checked(this.turn)) return allowedMoves;
 		const rook1 = this.getPieceByName(this.turn + 'Rook1');
 		const rook2 = this.getPieceByName(this.turn + 'Rook2');
+		if (!allowedMoves[0]) allowedMoves[0] = [];
+		if (!allowedMoves[1]) allowedMoves[1] = [];
 		if (rook1 && rook1.ableToCastle) {
 			const castlingPosition = { x: rook1.x - 2, y: rook1.y };
 			if (
@@ -297,17 +301,10 @@ class Game {
 		const should_kill_other_piece = kill && otherPiece && otherPiece.rank !== 'king';
 		piece.changePosition(pos.x, pos.y);
 		if (should_kill_other_piece) this.pieces = this.pieces.filter(p => p !== otherPiece);
-		if (this.king_checked(piece.color)) {
-			piece.changePosition(originalPosition.x, originalPosition.y);
-			if (should_kill_other_piece) {
-				this.pieces.push(otherPiece);
-			}
-			return 1;
-		} else {
-			piece.changePosition(originalPosition.x, originalPosition.y);
-			if (should_kill_other_piece) this.pieces.push(otherPiece);
-			return 0;
-		}
+		const kingChecked = this.king_checked(piece.color);
+		piece.changePosition(originalPosition.x, originalPosition.y);
+		if (should_kill_other_piece) this.pieces.push(otherPiece);
+		return kingChecked;
 	}
 
 	king_dead(color) {
